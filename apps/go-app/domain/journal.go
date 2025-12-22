@@ -5,26 +5,36 @@ import (
 )
 
 type Journal struct {
-	ID         string          `json:"id"`
+	PMID     int64  `json:"pmid"`
+	Title    string `json:"title"`
+	Abstract string `json:"abstract"`
+	Content  string `json:"content"`
+}
+
+type JournalEmbedding struct {
 	PMID       string          `json:"pmid"`
-	Title      string          `json:"title"`
-	Abstract   string          `json:"abstract"`
-	Content    string          `json:"content"`
-	Embeddings pgvector.Vector `json:"-"`
+	Embeddings pgvector.Vector `json:"embedding"`
 }
 
 type JournalResponse struct {
-	ID       string  `json:"id"`
-	PMID     string  `json:"pmid"`
+	PMID     int64   `json:"pmid"`
 	Title    string  `json:"title"`
 	Abstract string  `json:"abstract"`
 	Content  string  `json:"content"`
 	Distance float64 `json:"distance"`
 }
 
+type VectorType string
+
+const (
+	GeneralVectorType    VectorType = "generalist"
+	SpecialistVectorType VectorType = "specialist"
+)
+
 type JournalFilter struct {
-	Limit   *int   `json:"limit" query:"limit"`
-	Page    *int   `json:"page" query:"page"`
-	Search  string `json:"search" query:"search"`
-	VSearch string `json:"v_search" query:"v_search"`
+	Limit   *int       `json:"limit" query:"limit"`
+	Page    *int       `json:"page" query:"page"`
+	Search  string     `json:"search" query:"search"`
+	VSearch string     `json:"v_search" query:"v_search"`
+	Type    VectorType `json:"type" query:"type"`
 }

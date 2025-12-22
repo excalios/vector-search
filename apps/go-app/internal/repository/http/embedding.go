@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"go-app/domain"
 	"go-app/internal/logging"
+	"io"
 	"net"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/labstack/gommon/log"
 	"github.com/pgvector/pgvector-go"
 )
 
@@ -48,11 +50,13 @@ func NewEmbeddingHTTPRepository() *EmbeddingHTTPRepository {
 func (r *EmbeddingHTTPRepository) GetGeneralEmbedding(
 	ctx context.Context,
 	sentence string,
+	vType domain.VectorType,
 ) (*pgvector.Vector, error) {
 	url := fmt.Sprintf("%s/embedding/general", r.aiURL)
 
 	data := domain.EmbeddingInput{
 		Sentence: sentence,
+		Type:     vType,
 	}
 
 	reqBody, err := json.Marshal(data)
@@ -77,6 +81,15 @@ func (r *EmbeddingHTTPRepository) GetGeneralEmbedding(
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		bodyBytes, err := io.ReadAll(resp.Body)
+
+		if err != nil {
+			return nil, fmt.Errorf("Error reading http response: %v", err)
+		}
+
+		errResp := string(bodyBytes)
+		log.Printf("🪵CS8 errResp: %v CS8\n", errResp)
+
 		return nil, fmt.Errorf("failed to upload image, status code: %d", resp.StatusCode)
 	}
 

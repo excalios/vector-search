@@ -22,9 +22,9 @@ tracer = get_tracer("api.embedding")
         503: {"model": ErrorResponse},
     },
 )
-async def general(service: DepEmbeddingService, input: EmbeddingInput):
+def general(service: DepEmbeddingService, input: EmbeddingInput):
     with tracer.start_as_current_span("route.embedding.general") as span:
         span.set_attribute("http.method", "GET")
         span.set_attribute("http.route", "/general")
-        embeddings = await service.general_embed(input.sentence)
+        embeddings = service.general_embed(input)
         return embeddings

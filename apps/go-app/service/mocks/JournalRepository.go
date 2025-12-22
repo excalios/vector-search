@@ -9,6 +9,7 @@ import (
 	"go-app/domain"
 
 	"github.com/google/uuid"
+	"github.com/pgvector/pgvector-go"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -108,27 +109,27 @@ func (_c *JournalRepository_GetJournal_Call) RunAndReturn(run func(ctx context.C
 }
 
 // GetJournalList provides a mock function for the type JournalRepository
-func (_mock *JournalRepository) GetJournalList(ctx context.Context, filter *domain.JournalFilter) ([]domain.Journal, error) {
-	ret := _mock.Called(ctx, filter)
+func (_mock *JournalRepository) GetJournalList(ctx context.Context, filter *domain.JournalFilter, embedding *pgvector.Vector) ([]domain.JournalResponse, error) {
+	ret := _mock.Called(ctx, filter, embedding)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetJournalList")
 	}
 
-	var r0 []domain.Journal
+	var r0 []domain.JournalResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.JournalFilter) ([]domain.Journal, error)); ok {
-		return returnFunc(ctx, filter)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.JournalFilter, *pgvector.Vector) ([]domain.JournalResponse, error)); ok {
+		return returnFunc(ctx, filter, embedding)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.JournalFilter) []domain.Journal); ok {
-		r0 = returnFunc(ctx, filter)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.JournalFilter, *pgvector.Vector) []domain.JournalResponse); ok {
+		r0 = returnFunc(ctx, filter, embedding)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]domain.Journal)
+			r0 = ret.Get(0).([]domain.JournalResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.JournalFilter) error); ok {
-		r1 = returnFunc(ctx, filter)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.JournalFilter, *pgvector.Vector) error); ok {
+		r1 = returnFunc(ctx, filter, embedding)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -143,11 +144,12 @@ type JournalRepository_GetJournalList_Call struct {
 // GetJournalList is a helper method to define mock.On call
 //   - ctx context.Context
 //   - filter *domain.JournalFilter
-func (_e *JournalRepository_Expecter) GetJournalList(ctx interface{}, filter interface{}) *JournalRepository_GetJournalList_Call {
-	return &JournalRepository_GetJournalList_Call{Call: _e.mock.On("GetJournalList", ctx, filter)}
+//   - embedding *pgvector.Vector
+func (_e *JournalRepository_Expecter) GetJournalList(ctx interface{}, filter interface{}, embedding interface{}) *JournalRepository_GetJournalList_Call {
+	return &JournalRepository_GetJournalList_Call{Call: _e.mock.On("GetJournalList", ctx, filter, embedding)}
 }
 
-func (_c *JournalRepository_GetJournalList_Call) Run(run func(ctx context.Context, filter *domain.JournalFilter)) *JournalRepository_GetJournalList_Call {
+func (_c *JournalRepository_GetJournalList_Call) Run(run func(ctx context.Context, filter *domain.JournalFilter, embedding *pgvector.Vector)) *JournalRepository_GetJournalList_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -157,20 +159,25 @@ func (_c *JournalRepository_GetJournalList_Call) Run(run func(ctx context.Contex
 		if args[1] != nil {
 			arg1 = args[1].(*domain.JournalFilter)
 		}
+		var arg2 *pgvector.Vector
+		if args[2] != nil {
+			arg2 = args[2].(*pgvector.Vector)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
 }
 
-func (_c *JournalRepository_GetJournalList_Call) Return(journals []domain.Journal, err error) *JournalRepository_GetJournalList_Call {
-	_c.Call.Return(journals, err)
+func (_c *JournalRepository_GetJournalList_Call) Return(journalResponses []domain.JournalResponse, err error) *JournalRepository_GetJournalList_Call {
+	_c.Call.Return(journalResponses, err)
 	return _c
 }
 
-func (_c *JournalRepository_GetJournalList_Call) RunAndReturn(run func(ctx context.Context, filter *domain.JournalFilter) ([]domain.Journal, error)) *JournalRepository_GetJournalList_Call {
+func (_c *JournalRepository_GetJournalList_Call) RunAndReturn(run func(ctx context.Context, filter *domain.JournalFilter, embedding *pgvector.Vector) ([]domain.JournalResponse, error)) *JournalRepository_GetJournalList_Call {
 	_c.Call.Return(run)
 	return _c
 }

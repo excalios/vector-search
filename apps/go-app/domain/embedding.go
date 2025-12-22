@@ -3,7 +3,8 @@ package domain
 import "github.com/pgvector/pgvector-go"
 
 type EmbeddingInput struct {
-	Sentence string `json:"sentence"`
+	Sentence string     `json:"sentence"`
+	Type     VectorType `json:"type"`
 }
 
 type EmbeddingOutput struct {

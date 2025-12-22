@@ -31,7 +31,6 @@ func (u *JournalRepository) GetJournalList(
 ) ([]domain.JournalResponse, error) {
 	query := `
 		SELECT
-            id,
             pmid,
             title,
             abstract,
@@ -40,15 +39,23 @@ func (u *JournalRepository) GetJournalList(
 		FROM journals`
 
 	if filter != nil && filter.VSearch != "" && embedding != nil {
-		query = `
+		embeddingTable := ""
+		switch filter.Type {
+		case domain.GeneralVectorType:
+			embeddingTable = "journal_generalist_embeddings"
+		case domain.SpecialistVectorType:
+			embeddingTable = "journal_specialist_embeddings"
+		}
+		query = fmt.Sprintf(`
             SELECT
-                id,
-                pmid,
+                j.pmid,
                 title,
                 abstract,
                 content,
-                1 - (embeddings <=> @query) as distance
-            FROM journals`
+                1 - (je.embeddings <=> @query) as distance
+            FROM journals j
+            INNER JOIN %s je ON j.pmid = je.pmid
+        `, embeddingTable)
 	}
 
 	args := pgx.StrictNamedArgs{}
@@ -63,7 +70,7 @@ func (u *JournalRepository) GetJournalList(
 	}
 
 	if filter != nil && filter.VSearch != "" && embedding != nil {
-		query += " ORDER BY embeddings <-> @query "
+		query += " ORDER BY je.embeddings <-> @query "
 		args["query"] = embedding
 	}
 

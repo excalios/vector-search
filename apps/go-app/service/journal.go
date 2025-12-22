@@ -23,6 +23,7 @@ type EmbeddingHTTPRepository interface {
 	GetGeneralEmbedding(
 		ctx context.Context,
 		sentence string,
+		vType domain.VectorType,
 	) (*pgvector.Vector, error)
 }
 
@@ -61,7 +62,7 @@ func (s *JournalService) GetJournalList(
 	var embedding *pgvector.Vector
 	var err error
 	if filter != nil && filter.VSearch != "" {
-		embedding, err = s.h.GetGeneralEmbedding(ctx, filter.VSearch)
+		embedding, err = s.h.GetGeneralEmbedding(ctx, filter.VSearch, filter.Type)
 		if err != nil {
 			logging.LogError(ctx, err, "get_journal_list_service")
 			return nil, err

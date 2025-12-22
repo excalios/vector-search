@@ -16,14 +16,13 @@ import (
 
 func TestJournalService_GetJournal(t *testing.T) {
 	mockJournalRepo := new(mocks.JournalRepository)
-	journalService := service.NewJournalService(mockJournalRepo)
+	mockEmbeddingHTTP := new(mocks.EmbeddingHTTPRepository)
+	journalService := service.NewJournalService(mockJournalRepo, mockEmbeddingHTTP)
 
 	ctx := context.Background()
 	journalID := uuid.New()
 	expectedJournal := &domain.Journal{
-		ID:    journalID.String(),
-		Name:  "Fetched Journal",
-		Email: "fetched@example.com",
+		Title: "Fetched Journal",
 	}
 
 	t.Run("Successfully fetches a journal", func(t *testing.T) {
@@ -33,16 +32,12 @@ func TestJournalService_GetJournal(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, j)
-		assert.Equal(t, expectedJournal.ID, j.ID)
-		assert.Equal(t, expectedJournal.Name, j.Name)
+		assert.Equal(t, expectedJournal.Title, j.Title)
 
 		mockJournalRepo.AssertExpectations(t)
 	})
 
 	t.Run("Returns error when repository fails", func(t *testing.T) {
-		mockJournalRepo = new(mocks.JournalRepository)
-		journalService = service.NewJournalService(mockJournalRepo)
-
 		repoErr := errors.New("network error")
 		mockJournalRepo.On("GetJournal", mock.Anything, journalID).Return(nil, repoErr).Once()
 
@@ -56,9 +51,6 @@ func TestJournalService_GetJournal(t *testing.T) {
 	})
 
 	t.Run("Returns nil when journal not found in repository", func(t *testing.T) {
-		mockJournalRepo = new(mocks.JournalRepository)
-		journalService = service.NewJournalService(mockJournalRepo)
-
 		mockJournalRepo.On("GetJournal", mock.Anything, journalID).Return(nil, nil).Once()
 
 		j, err := journalService.GetJournal(ctx, journalID)
@@ -72,35 +64,43 @@ func TestJournalService_GetJournal(t *testing.T) {
 
 func TestJournalService_GetJournalList(t *testing.T) {
 	mockJournalRepo := new(mocks.JournalRepository)
-	journalService := service.NewJournalService(mockJournalRepo)
+	mockEmbeddingHTTP := new(mocks.EmbeddingHTTPRepository)
+	journalService := service.NewJournalService(mockJournalRepo, mockEmbeddingHTTP)
 
 	ctx := context.Background()
 	filter := &domain.JournalFilter{
 		Search: "test",
 	}
-	expectedJournals := []domain.Journal{
-		{ID: uuid.New().String(), Name: "Test Journal One"},
-		{ID: uuid.New().String(), Name: "Another Test Journal"},
+	expectedJournals := []domain.JournalResponse{
+		{Title: "Test Journal One"},
+		{Title: "Another Test Journal"},
 	}
 
 	t.Run("Successfully fetches journals list", func(t *testing.T) {
-		mockJournalRepo.On("GetJournalList", mock.Anything, filter).Return(expectedJournals, nil).Once()
+		mockJournalRepo.On(
+			"GetJournalList",
+			mock.Anything,
+			filter,
+			mock.AnythingOfType("*pgvector.Vector"),
+		).Return(expectedJournals, nil).Once()
 
 		journals, err := journalService.GetJournalList(ctx, filter)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, journals)
 		assert.Len(t, journals, 2)
-		assert.Equal(t, expectedJournals[0].Name, journals[0].Name)
+		assert.Equal(t, expectedJournals[0].Title, journals[0].Title)
 
 		mockJournalRepo.AssertExpectations(t)
 	})
 
 	t.Run("Returns empty list when no journals found", func(t *testing.T) {
-		mockJournalRepo = new(mocks.JournalRepository)
-		journalService = service.NewJournalService(mockJournalRepo)
-
-		mockJournalRepo.On("GetJournalList", mock.Anything, filter).Return([]domain.Journal{}, nil).Once()
+		mockJournalRepo.On(
+			"GetJournalList",
+			mock.Anything,
+			filter,
+			mock.AnythingOfType("*pgvector.Vector"),
+		).Return([]domain.JournalResponse{}, nil).Once()
 
 		journals, err := journalService.GetJournalList(ctx, filter)
 
@@ -112,11 +112,13 @@ func TestJournalService_GetJournalList(t *testing.T) {
 	})
 
 	t.Run("Returns error when repository fails", func(t *testing.T) {
-		mockJournalRepo = new(mocks.JournalRepository)
-		journalService = service.NewJournalService(mockJournalRepo)
-
 		repoErr := errors.New("get journals list database error")
-		mockJournalRepo.On("GetJournalList", mock.Anything, filter).Return(nil, repoErr).Once()
+		mockJournalRepo.On(
+			"GetJournalList",
+			mock.Anything,
+			filter,
+			mock.AnythingOfType("*pgvector.Vector"),
+		).Return(nil, repoErr).Once()
 
 		journals, err := journalService.GetJournalList(ctx, filter)
 
