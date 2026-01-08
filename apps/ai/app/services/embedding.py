@@ -2,6 +2,7 @@ from typing import List
 from app.core.instrumentation import get_tracer
 from app.core.logging import get_logger
 from app.core.response import ErrorResponse, SuccessResponse, success_response
+import sentence_transformers
 from sentence_transformers import SentenceTransformer
 
 from app.schemas.embedding import EmbeddingInput
@@ -17,9 +18,7 @@ class EmbeddingService:
             "jinaai/jina-embeddings-v2-base-en", # switch to en/zh for English or Chinese
             trust_remote_code=True
         )
-        self.specialist_model = SentenceTransformer(
-            "Simonlee711/Clinical_ModernBERT"
-        )
+        self.specialist_model = SentenceTransformer("ncbi/MedCPT-Query-Encoder")
 
     def general_embed(self, input: EmbeddingInput) -> SuccessResponse[List[float]] | ErrorResponse:
         with tracer.start_as_current_span("service.embedding") as span:

@@ -35,6 +35,7 @@ func (u *JournalRepository) GetJournalList(
             title,
             abstract,
             content,
+            mesh_terms,
             0 as distance
 		FROM journals`
 
@@ -52,6 +53,7 @@ func (u *JournalRepository) GetJournalList(
                 title,
                 abstract,
                 content,
+                mesh_terms,
                 1 - (je.embeddings <=> @query) as distance
             FROM journals j
             INNER JOIN %s je ON j.pmid = je.pmid

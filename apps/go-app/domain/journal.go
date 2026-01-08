@@ -5,10 +5,11 @@ import (
 )
 
 type Journal struct {
-	PMID     int64  `json:"pmid"`
-	Title    string `json:"title"`
-	Abstract string `json:"abstract"`
-	Content  string `json:"content"`
+	PMID      int64    `json:"pmid"`
+	Title     string   `json:"title"`
+	Abstract  string   `json:"abstract"`
+	Content   string   `json:"content"`
+	MeSHTerms []string `json:"mesh_terms"`
 }
 
 type JournalEmbedding struct {
@@ -17,11 +18,12 @@ type JournalEmbedding struct {
 }
 
 type JournalResponse struct {
-	PMID     int64   `json:"pmid"`
-	Title    string  `json:"title"`
-	Abstract string  `json:"abstract"`
-	Content  string  `json:"content"`
-	Distance float64 `json:"distance"`
+	PMID      int64    `json:"pmid"`
+	Title     string   `json:"title"`
+	Abstract  string   `json:"abstract"`
+	Content   string   `json:"content"`
+	MeSHTerms []string `json:"mesh_terms"`
+	Distance  float64  `json:"distance"`
 }
 
 type VectorType string
